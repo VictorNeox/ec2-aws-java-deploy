@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy a S3 Bucket for storing Springboot application using AWS Free Tier.
+Resources:
+
+  JavaStudyS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: neox-java-study-project-bucket # Change as u want
+      AccessControl: Private
+      # Add other properties as needed

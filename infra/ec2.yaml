@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy a Java Springboot application on an EC2 instance using AWS Free Tier.
+Resources:
+
+  Ec2InstanceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "ec2.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: "EC2S3FullAccess"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:*"
+                Resource: "arn:aws:s3:::neox-java-study-project-bucket/*"
+
+  Ec2InstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Path: "/"
+      Roles:
+        - Ref: "Ec2InstanceRole"
+
+  JavaStudyEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t2.micro
+      KeyName: java-kp
+      ImageId: ami-00beae93a2d981137 # Amazon Linux 2 AMI
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      IamInstanceProfile:
+        Ref: "Ec2InstanceProfile"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo yum update -y
+          sudo yum install java-17 -y
+          sudo yum install java-openjdk17 -y
+          sudo cd /home/ec2-user
+          sudo aws s3 cp s3://neox-java-study-project-bucket/spring-app.jar spring-app.jar
+          sudo java -jar spring-app.jar
+          
+
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow SSH and HTTP access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
