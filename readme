@@ -1,0 +1,2 @@
+aws cloudformation create-stack --stack-name JavaSpringEC2 --template-body file://infra/ec2.yaml --capabilities CAPABILITY_IAM
+aws cloudformation delete-stack --stack-name JavaSpringEC2
